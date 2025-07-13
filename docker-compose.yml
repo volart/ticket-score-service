@@ -1,0 +1,22 @@
+services:
+  ticket-score-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    environment:
+      - PORT=50051
+      - DATABASE_PATH=./database.db
+    volumes:
+      - ./database.db:/root/database.db:ro
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "50051"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  default:
+    name: ticket-score-network
