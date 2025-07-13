@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -94,6 +95,20 @@ func TestGetCategoryAnalytics(t *testing.T) {
 			expectedCount: 1,
 			expectError:   false,
 		},
+		{
+			name: "long date range - weekly aggregation",
+			categories: []models.RatingCategory{
+				{ID: 1, Name: "Quality", Weight: 10},
+			},
+			ratings: map[string][]models.Rating{
+				"1-2024-01-01": {{ID: 1, Rating: 4, RatingCategoryID: 1}},
+				"1-2024-02-15": {{ID: 2, Rating: 5, RatingCategoryID: 1}},
+			},
+			startDate:     time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+			endDate:       time.Date(2024, 2, 15, 0, 0, 0, 0, time.UTC),
+			expectedCount: 1,
+			expectError:   false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -123,6 +138,72 @@ func TestGetCategoryAnalytics(t *testing.T) {
 				}
 				if len(analytics.Dates) == 0 {
 					t.Errorf("dates should not be empty")
+				}
+
+				// Check if long date ranges use weekly aggregation
+				if tt.name == "long date range - weekly aggregation" {
+					for _, date := range analytics.Dates {
+						if !strings.Contains(date.Date, " to ") {
+							t.Errorf("expected weekly format with 'to' separator, got %s", date.Date)
+						}
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestCalculateScores(t *testing.T) {
+	tests := []struct {
+		name                  string
+		startDate            time.Time
+		endDate              time.Time
+		expectedAggregation  string // "daily" or "weekly"
+	}{
+		{
+			name:                "short range - daily aggregation",
+			startDate:           time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+			endDate:             time.Date(2024, 1, 5, 0, 0, 0, 0, time.UTC),
+			expectedAggregation: "daily",
+		},
+		{
+			name:                "long range - weekly aggregation",
+			startDate:           time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+			endDate:             time.Date(2024, 2, 15, 0, 0, 0, 0, time.UTC),
+			expectedAggregation: "weekly",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			categoryRepo := &mockCategoryRepo{}
+			ratingsRepo := &mockRatingsRepo{ratingsByDate: map[string][]models.Rating{}}
+			ticketScoreServ := &mockTicketScoreService{score: 75.0}
+			service := NewRatingAnalyticsService(categoryRepo, ratingsRepo, ticketScoreServ)
+
+			category := models.RatingCategory{ID: 1, Name: "Quality", Weight: 10}
+			scores, _, err := service.calculateScores(context.Background(), category, tt.startDate, tt.endDate)
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			}
+
+			if len(scores) == 0 {
+				t.Errorf("expected scores to be returned")
+			}
+
+			// Check aggregation type based on date format
+			if tt.expectedAggregation == "weekly" {
+				for _, score := range scores {
+					if !strings.Contains(score.Date, " to ") {
+						t.Errorf("expected weekly format with 'to' separator, got %s", score.Date)
+					}
+				}
+			} else {
+				for _, score := range scores {
+					if strings.Contains(score.Date, " to ") {
+						t.Errorf("expected daily format without 'to' separator, got %s", score.Date)
+					}
 				}
 			}
 		})
