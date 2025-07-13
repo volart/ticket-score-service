@@ -21,7 +21,7 @@ func (s *TicketScoreService) CalculateScore(ratings []models.Rating,
 		return 0, fmt.Errorf("no ratings provided")
 	}
 
-	categoryWeights := make(map[int]int)
+	categoryWeights := make(map[int]float64)
 	for _, category := range categories {
 		categoryWeights[category.ID] = category.Weight
 	}
@@ -41,7 +41,7 @@ func (s *TicketScoreService) CalculateScore(ratings []models.Rating,
 				rating.Rating)
 		}
 
-		totalWeightedScore += float64(rating.Rating * weight)
+		totalWeightedScore += float64(rating.Rating) * weight
 		totalMaxPossibleScore += float64(weight * 5)
 	}
 

@@ -2,34 +2,18 @@ package main
 
 import (
 	"log"
-	"net"
 
-	"ticket-score-service/internal/config"
-	"ticket-score-service/internal/database"
-
-	"google.golang.org/grpc"
+	"ticket-score-service/internal/app"
 )
 
 func main() {
-	cfg := config.New()
-
-	db, err := database.New(cfg.DatabasePath)
+	application, err := app.New()
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to create application: %v", err)
 	}
-	defer db.Close()
+	defer application.Shutdown()
 
-	log.Printf("Connected to database: %s", cfg.DatabasePath)
-
-	lis, err := net.Listen("tcp", ":"+cfg.Port)
-	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
-	}
-
-	s := grpc.NewServer()
-
-	log.Printf("Server listening on port %s", cfg.Port)
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Failed to serve: %v", err)
+	if err := application.Run(); err != nil {
+		log.Fatalf("Failed to run application: %v", err)
 	}
 }

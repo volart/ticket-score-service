@@ -31,3 +31,34 @@ protoc --go_out=. --go-grpc_out=. proto/rating_analytics.proto
 ```
 
 **Note:** Generated files in `proto/generated/` are ignored by git and should be regenerated locally.
+
+## Testing gRPC API
+
+### Using grpcurl
+Install grpcurl:
+```bash
+brew install grpcurl
+```
+
+Test commands:
+```bash
+# List available services
+grpcurl -plaintext localhost:50051 list
+
+# List methods for RatingAnalyticsService
+grpcurl -plaintext localhost:50051 list rating_analytics.RatingAnalyticsService
+
+# Get category analytics (daily scores - short range)
+grpcurl -plaintext -d '{
+  "start_date": "2019-10-01",
+  "end_date": "2019-10-03"
+}' localhost:50051 rating_analytics.RatingAnalyticsService/GetCategoryAnalytics
+
+# Get category analytics (weekly scores - long range)
+grpcurl -plaintext -d '{
+  "start_date": "2019-10-01",
+  "end_date": "2019-11-03"
+}' localhost:50051 rating_analytics.RatingAnalyticsService/GetCategoryAnalytics
+```
+
+**Note:** Date ranges ≤ 30 days return daily scores, ranges > 30 days return weekly scores.

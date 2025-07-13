@@ -150,7 +150,7 @@ func (s *RatingAnalyticsService) calculateOverallScore(totalRatings []models.Rat
 	var totalMaxPossibleScore float64
 
 	for _, rating := range totalRatings {
-		totalWeightedScore += float64(rating.Rating * category.Weight)
+		totalWeightedScore += float64(rating.Rating) * category.Weight
 		totalMaxPossibleScore += float64(category.Weight * 5)
 	}
 

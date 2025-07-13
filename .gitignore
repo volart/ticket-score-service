@@ -7,3 +7,6 @@ proto/generated/
 
 # Protocol buffer binaries
 *.pb
+
+# Compiled binaries
+server
