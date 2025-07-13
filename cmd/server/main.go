@@ -5,12 +5,21 @@ import (
 	"net"
 
 	"ticket-score-service/internal/config"
+	"ticket-score-service/internal/database"
 
 	"google.golang.org/grpc"
 )
 
 func main() {
 	cfg := config.New()
+
+	db, err := database.New(cfg.DatabasePath)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer db.Close()
+
+	log.Printf("Connected to database: %s", cfg.DatabasePath)
 
 	lis, err := net.Listen("tcp", ":"+cfg.Port)
 	if err != nil {
