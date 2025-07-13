@@ -1,1 +1,9 @@
 database.db
+
+# gRPC generated files
+proto/generated/
+*.pb.go
+*_grpc.pb.go
+
+# Protocol buffer binaries
+*.pb

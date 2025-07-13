@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package rating_analytics;
+
+option go_package = "ticket-score-service/proto/generated/rating_analytics";
+
+// Request message for getting category analytics
+message GetCategoryAnalyticsRequest {
+  string start_date = 1; // Format: "2006-01-02" (YYYY-MM-DD)
+  string end_date = 2;   // Format: "2006-01-02" (YYYY-MM-DD)
+}
+
+// Represents a score for a specific date or date range
+message DailyScore {
+  string date = 1;  // Daily: "2006-01-02" or Weekly: "2006-01-02 to 2006-01-08"
+  string score = 2; // "85%" or "N/A"
+}
+
+// Analytics data for a single category
+message CategoryAnalytics {
+  string category = 1;              // Category name (e.g., "Spelling", "Grammar")
+  int32 ratings = 2;                // Total number of ratings in the date range
+  repeated DailyScore dates = 3;    // Daily or weekly scores
+  string score = 4;                 // Overall score for the entire date range
+}
+
+// Response message containing analytics for all categories
+message GetCategoryAnalyticsResponse {
+  repeated CategoryAnalytics analytics = 1;
+}
+
+// Service definition for rating analytics operations
+service RatingAnalyticsService {
+  // Get category analytics for a specified date range
+  // Returns daily scores if range <= 30 days, weekly scores if > 30 days
+  rpc GetCategoryAnalytics(GetCategoryAnalyticsRequest) returns (GetCategoryAnalyticsResponse);
+}

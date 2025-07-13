@@ -61,8 +61,8 @@ func TestGetCategoryAnalytics(t *testing.T) {
 		{
 			name: "successful analysis with ratings",
 			categories: []models.RatingCategory{
-				{ID: 1, Name: "Quality", Weight: 10},
-				{ID: 2, Name: "Speed", Weight: 5},
+				{ID: 1, Name: "Spelling", Weight: 10},
+				{ID: 2, Name: "Grammar", Weight: 5},
 			},
 			ratings: map[string][]models.Rating{
 				"1-2024-01-01": {{ID: 1, Rating: 4, RatingCategoryID: 1}},
@@ -85,7 +85,7 @@ func TestGetCategoryAnalytics(t *testing.T) {
 		{
 			name: "multiple days with mixed data",
 			categories: []models.RatingCategory{
-				{ID: 1, Name: "Quality", Weight: 10},
+				{ID: 1, Name: "Spelling", Weight: 10},
 			},
 			ratings: map[string][]models.Rating{
 				"1-2024-01-01": {{ID: 1, Rating: 4, RatingCategoryID: 1}},
@@ -98,7 +98,7 @@ func TestGetCategoryAnalytics(t *testing.T) {
 		{
 			name: "long date range - weekly aggregation",
 			categories: []models.RatingCategory{
-				{ID: 1, Name: "Quality", Weight: 10},
+				{ID: 1, Name: "Spelling", Weight: 10},
 			},
 			ratings: map[string][]models.Rating{
 				"1-2024-01-01": {{ID: 1, Rating: 4, RatingCategoryID: 1}},
@@ -155,10 +155,10 @@ func TestGetCategoryAnalytics(t *testing.T) {
 
 func TestCalculateScores(t *testing.T) {
 	tests := []struct {
-		name                  string
-		startDate            time.Time
-		endDate              time.Time
-		expectedAggregation  string // "daily" or "weekly"
+		name                string
+		startDate           time.Time
+		endDate             time.Time
+		expectedAggregation string // "daily" or "weekly"
 	}{
 		{
 			name:                "short range - daily aggregation",
@@ -181,7 +181,7 @@ func TestCalculateScores(t *testing.T) {
 			ticketScoreServ := &mockTicketScoreService{score: 75.0}
 			service := NewRatingAnalyticsService(categoryRepo, ratingsRepo, ticketScoreServ)
 
-			category := models.RatingCategory{ID: 1, Name: "Quality", Weight: 10}
+			category := models.RatingCategory{ID: 1, Name: "Spelling", Weight: 10}
 			scores, _, err := service.calculateScores(context.Background(), category, tt.startDate, tt.endDate)
 
 			if err != nil {
@@ -216,7 +216,7 @@ func TestCalculateDailyScore(t *testing.T) {
 		ticketScoreServ: ticketScoreServ,
 	}
 
-	category := models.RatingCategory{ID: 1, Name: "Quality", Weight: 10}
+	category := models.RatingCategory{ID: 1, Name: "Spelling", Weight: 10}
 
 	tests := []struct {
 		name          string
@@ -253,7 +253,7 @@ func TestCalculateDailyScore(t *testing.T) {
 
 func TestCalculateOverallScore(t *testing.T) {
 	service := &RatingAnalyticsService{}
-	category := models.RatingCategory{ID: 1, Name: "Quality", Weight: 10}
+	category := models.RatingCategory{ID: 1, Name: "Spelling", Weight: 10}
 
 	tests := []struct {
 		name          string

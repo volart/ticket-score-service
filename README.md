@@ -13,3 +13,21 @@ The service should be using provided sample data from SQLite database (`database
 
   ### Run in background with docker
   docker-compose up -d
+
+## Development
+
+### gRPC Code Generation
+
+To regenerate the gRPC code from proto files:
+
+```bash
+# Install required tools
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# Generate Go code from proto files
+export PATH=$PATH:$(go env GOPATH)/bin
+protoc --go_out=. --go-grpc_out=. proto/rating_analytics.proto
+```
+
+**Note:** Generated files in `proto/generated/` are ignored by git and should be regenerated locally.
