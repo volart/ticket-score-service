@@ -146,20 +146,12 @@ func (s *RatingAnalyticsService) calculateOverallScore(totalRatings []models.Rat
 		return "N/A"
 	}
 
-	var totalWeightedScore float64
-	var totalMaxPossibleScore float64
-
-	for _, rating := range totalRatings {
-		totalWeightedScore += float64(rating.Rating) * category.Weight
-		totalMaxPossibleScore += float64(category.Weight * 5)
-	}
-
-	if totalMaxPossibleScore == 0 {
+	score, err := s.ticketScoreServ.CalculateScore(totalRatings, []models.RatingCategory{category})
+	if err != nil {
 		return "N/A"
 	}
 
-	totalScore := (totalWeightedScore / totalMaxPossibleScore) * 100
-	return formatScore(totalScore)
+	return formatScore(score)
 }
 
 func (s *RatingAnalyticsService) shouldUseWeeklyAggregation(startDate, endDate time.Time) bool {

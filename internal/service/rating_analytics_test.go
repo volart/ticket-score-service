@@ -252,12 +252,17 @@ func TestCalculateDailyScore(t *testing.T) {
 }
 
 func TestCalculateOverallScore(t *testing.T) {
-	service := &RatingAnalyticsService{}
+	ticketScoreServ := &mockTicketScoreService{}
+	service := &RatingAnalyticsService{
+		ticketScoreServ: ticketScoreServ,
+	}
 	category := models.RatingCategory{ID: 1, Name: "Spelling", Weight: 10}
 
 	tests := []struct {
 		name          string
 		ratings       []models.Rating
+		mockScore     float64
+		mockError     error
 		expectedScore string
 	}{
 		{
@@ -270,6 +275,7 @@ func TestCalculateOverallScore(t *testing.T) {
 			ratings: []models.Rating{
 				{ID: 1, Rating: 4, RatingCategoryID: 1},
 			},
+			mockScore:     80.0,
 			expectedScore: "80%",
 		},
 		{
@@ -278,12 +284,25 @@ func TestCalculateOverallScore(t *testing.T) {
 				{ID: 1, Rating: 4, RatingCategoryID: 1},
 				{ID: 2, Rating: 5, RatingCategoryID: 1},
 			},
+			mockScore:     90.0,
 			expectedScore: "90%",
+		},
+		{
+			name: "calculation error",
+			ratings: []models.Rating{
+				{ID: 1, Rating: 4, RatingCategoryID: 1},
+			},
+			mockError:     fmt.Errorf("calculation error"),
+			expectedScore: "N/A",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Set mock values for this test
+			ticketScoreServ.score = tt.mockScore
+			ticketScoreServ.err = tt.mockError
+			
 			result := service.calculateOverallScore(tt.ratings, category)
 
 			if result != tt.expectedScore {
