@@ -53,9 +53,38 @@ func (r *RatingsRepository) GetByCategoryIDAndDate(ctx context.Context, category
 func (r *RatingsRepository) GetByTicketID(ctx context.Context, ticketID int) ([]models.Rating, error) {
 	query := `SELECT id, rating, ticket_id, rating_category_id, reviewer_id, reviewee_id, created_at
 			  FROM ratings
-			  WHERE ticket_id = ?`
+			  WHERE ticket_id = ?
+			  ORDER BY created_at`
 
 	rows, err := r.db.QueryContext(ctx, query, ticketID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query ratings: %w", err)
+	}
+	defer rows.Close()
+
+	var ratings []models.Rating
+	for rows.Next() {
+		var rating models.Rating
+		if err := rows.Scan(&rating.ID, &rating.Rating, &rating.TicketID, &rating.RatingCategoryID, &rating.ReviewerID, &rating.RevieweeID, &rating.CreatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan rating: %w", err)
+		}
+		ratings = append(ratings, rating)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+
+	return ratings, nil
+}
+
+func (r *RatingsRepository) GetByTicketIDAndCategoryID(ctx context.Context, ticketID, categoryID int) ([]models.Rating, error) {
+	query := `SELECT id, rating, ticket_id, rating_category_id, reviewer_id, reviewee_id, created_at
+			  FROM ratings
+			  WHERE ticket_id = ? AND rating_category_id = ?
+			  ORDER BY created_at`
+
+	rows, err := r.db.QueryContext(ctx, query, ticketID, categoryID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query ratings: %w", err)
 	}
