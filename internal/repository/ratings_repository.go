@@ -23,8 +23,8 @@ func (r *RatingsRepository) GetByCategoryIDAndDate(ctx context.Context, category
 	startOfDay := time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, date.Location())
 	endOfDay := startOfDay.Add(24 * time.Hour)
 
-	query := `SELECT id, rating, ticket_id, rating_category_id, reviewer_id, reviewee_id, created_at 
-			  FROM ratings 
+	query := `SELECT id, rating, ticket_id, rating_category_id, reviewer_id, reviewee_id, created_at
+			  FROM ratings
 			  WHERE rating_category_id = ? AND created_at >= ? AND created_at < ?
 			  ORDER BY created_at`
 
