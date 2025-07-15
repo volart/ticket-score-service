@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package overall_quality;
+
+option go_package = "ticket-score-service/proto/generated/overall_quality";
+
+// Request message for getting overall quality score
+message GetOverallQualityScoreRequest {
+  string start_date = 1; // Format: "2006-01-02" (YYYY-MM-DD)
+  string end_date = 2;   // Format: "2006-01-02" (YYYY-MM-DD)
+}
+
+// Response message for overall quality score
+message GetOverallQualityScoreResponse {
+  string period = 1;            // Date range formatted as "YYYY-MM-DD to YYYY-MM-DD"
+  string score = 2;             // Formatted percentage score (e.g., "85%")
+  int32 total_ratings = 3;      // Total number of ratings processed
+  string processing_time = 4;   // Processing time in milliseconds (e.g., "150ms")
+  int32 chunks_processed = 5;   // Number of chunks processed
+  int32 goroutines = 6;         // Number of goroutines used
+}
+
+// Service definition for overall quality operations
+service OverallQualityService {
+  // GetOverallQualityScore calculates the overall weighted quality score for a date range
+  rpc GetOverallQualityScore(GetOverallQualityScoreRequest) returns (GetOverallQualityScoreResponse);
+}
