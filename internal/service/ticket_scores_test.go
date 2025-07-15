@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"ticket-score-service/internal/mocks"
 	"ticket-score-service/internal/models"
 )
 
@@ -120,9 +121,9 @@ func TestGetTicketScores(t *testing.T) {
 				categories: tt.categories,
 				err:        tt.categoryRepoErr,
 			}
-			mockRatingsRepo := &mockRatingsRepo{
-				ratingsByDate: tt.ratingsData,
-				err:           tt.ratingsRepoErr,
+			mockRatingsRepo := &mocks.MockRatingsRepo{
+				Ratings: tt.ratingsData,
+				Err:     tt.ratingsRepoErr,
 			}
 			mockScoreCalc := &mockScoreCalculator{
 				calculateFunc: tt.mockScoreCalculator,
@@ -284,9 +285,9 @@ func TestCalculateTicketScore(t *testing.T) {
 			mockCategoryRepo := &mockCategoryRepo{
 				categories: categories,
 			}
-			mockRatingsRepo := &mockRatingsRepo{
-				ratingsByDate: tt.ratingsData,
-				err:           tt.ratingsRepoErr,
+			mockRatingsRepo := &mocks.MockRatingsRepo{
+				Ratings: tt.ratingsData,
+				Err:     tt.ratingsRepoErr,
 			}
 			mockScoreCalc := &mockScoreCalculator{
 				calculateFunc: tt.mockScoreCalculator,
@@ -352,8 +353,8 @@ func TestTicketScoresService_ConcurrentProcessing(t *testing.T) {
 	mockCategoryRepo := &mockCategoryRepo{
 		categories: categories,
 	}
-	mockRatingsRepo := &mockRatingsRepo{
-		ratingsByDate: ratingsData,
+	mockRatingsRepo := &mocks.MockRatingsRepo{
+		Ratings: ratingsData,
 	}
 	mockScoreCalc := &mockScoreCalculator{
 		calculateFunc: func(ratings []models.Rating, categories []models.RatingCategory) (float64, error) {

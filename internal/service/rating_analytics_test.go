@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"ticket-score-service/internal/mocks"
 	"ticket-score-service/internal/models"
 	"ticket-score-service/internal/utils"
 )
@@ -18,110 +19,6 @@ type mockCategoryRepo struct {
 
 func (m *mockCategoryRepo) GetAll(ctx context.Context) ([]models.RatingCategory, error) {
 	return m.categories, m.err
-}
-
-type mockRatingsRepo struct {
-	ratingsByDate map[string][]models.Rating
-	err           error
-}
-
-func (m *mockRatingsRepo) GetByCategoryIDAndDate(ctx context.Context, categoryID int, date time.Time) ([]models.Rating, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-
-	dateStr := date.Format("2006-01-02")
-	key := fmt.Sprintf("%d-%s", categoryID, dateStr)
-
-	if ratings, exists := m.ratingsByDate[key]; exists {
-		return ratings, nil
-	}
-
-	return []models.Rating{}, nil
-}
-
-func (m *mockRatingsRepo) GetDistinctTicketIDsByDateRange(ctx context.Context, startDate, endDate time.Time) ([]int, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-
-	ticketIDMap := make(map[int]bool)
-	for _, ratings := range m.ratingsByDate {
-		for _, rating := range ratings {
-			if rating.CreatedAt.After(startDate) && rating.CreatedAt.Before(endDate.Add(24*time.Hour)) {
-				ticketIDMap[rating.TicketID] = true
-			}
-		}
-	}
-
-	var ticketIDs []int
-	for id := range ticketIDMap {
-		ticketIDs = append(ticketIDs, id)
-	}
-
-	return ticketIDs, nil
-}
-
-func (m *mockRatingsRepo) GetByTicketIDAndCategoryID(ctx context.Context, ticketID, categoryID int) ([]models.Rating, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-
-	var results []models.Rating
-	for _, ratings := range m.ratingsByDate {
-		for _, rating := range ratings {
-			if rating.TicketID == ticketID && rating.RatingCategoryID == categoryID {
-				results = append(results, rating)
-			}
-		}
-	}
-
-	return results, nil
-}
-
-func (m *mockRatingsRepo) GetByDateRangePaginated(ctx context.Context, startDate, endDate time.Time, limit, offset int) ([]models.Rating, error) {
-	if m.err != nil {
-		return nil, m.err
-	}
-	
-	// For testing, collect all ratings within date range and apply pagination
-	var allRatings []models.Rating
-	for _, ratings := range m.ratingsByDate {
-		for _, rating := range ratings {
-			if rating.CreatedAt.After(startDate) && rating.CreatedAt.Before(endDate.Add(24*time.Hour)) {
-				allRatings = append(allRatings, rating)
-			}
-		}
-	}
-	
-	// Apply pagination
-	if offset >= len(allRatings) {
-		return []models.Rating{}, nil
-	}
-	
-	end := offset + limit
-	if end > len(allRatings) {
-		end = len(allRatings)
-	}
-	
-	return allRatings[offset:end], nil
-}
-
-func (m *mockRatingsRepo) CountByDateRange(ctx context.Context, startDate, endDate time.Time) (int, error) {
-	if m.err != nil {
-		return 0, m.err
-	}
-	
-	count := 0
-	for _, ratings := range m.ratingsByDate {
-		for _, rating := range ratings {
-			if rating.CreatedAt.After(startDate) && rating.CreatedAt.Before(endDate.Add(24*time.Hour)) {
-				count++
-			}
-		}
-	}
-	
-	return count, nil
 }
 
 type mockTicketScoreService struct {
@@ -199,7 +96,7 @@ func TestGetCategoryAnalytics(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			categoryRepo := &mockCategoryRepo{categories: tt.categories}
-			ratingsRepo := &mockRatingsRepo{ratingsByDate: tt.ratings}
+			ratingsRepo := &mocks.MockRatingsRepo{Ratings: tt.ratings}
 			ticketScoreServ := &mockTicketScoreService{score: 80.0}
 
 			service := NewRatingAnalyticsService(categoryRepo, ratingsRepo, ticketScoreServ)
@@ -262,7 +159,7 @@ func TestCalculateScores(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			categoryRepo := &mockCategoryRepo{}
-			ratingsRepo := &mockRatingsRepo{ratingsByDate: map[string][]models.Rating{}}
+			ratingsRepo := &mocks.MockRatingsRepo{Ratings: map[string][]models.Rating{}}
 			ticketScoreServ := &mockTicketScoreService{score: 75.0}
 			service := NewRatingAnalyticsService(categoryRepo, ratingsRepo, ticketScoreServ)
 
@@ -387,7 +284,7 @@ func TestCalculateOverallScore(t *testing.T) {
 			// Set mock values for this test
 			ticketScoreServ.score = tt.mockScore
 			ticketScoreServ.err = tt.mockError
-			
+
 			result := service.calculateOverallScore(tt.ratings, category)
 
 			if result != tt.expectedScore {

@@ -246,4 +246,3 @@ func (s *OverallQualityService) aggregateChunkResults(resultChan <-chan ChunkRes
 
 	return finalScore, totalRatings, chunksProcessed, nil
 }
-
