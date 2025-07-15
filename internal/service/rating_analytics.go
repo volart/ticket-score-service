@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"ticket-score-service/internal/models"
+	"ticket-score-service/internal/utils"
 )
 
 type DailyScore struct {
@@ -141,7 +142,7 @@ func (s *RatingAnalyticsService) calculateDailyScore(dailyRatings []models.Ratin
 
 	return DailyScore{
 		Date:  dateStr,
-		Score: formatScore(score),
+		Score: utils.FormatScore(score),
 	}
 }
 
@@ -155,7 +156,7 @@ func (s *RatingAnalyticsService) calculateOverallScore(totalRatings []models.Rat
 		return "N/A"
 	}
 
-	return formatScore(score)
+	return utils.FormatScore(score)
 }
 
 func (s *RatingAnalyticsService) shouldUseWeeklyAggregation(startDate, endDate time.Time) bool {
@@ -236,10 +237,7 @@ func (s *RatingAnalyticsService) calculatePeriodScore(ratings []models.Rating, c
 
 	return DailyScore{
 		Date:  periodStr,
-		Score: formatScore(score),
+		Score: utils.FormatScore(score),
 	}
 }
 
-func formatScore(score float64) string {
-	return fmt.Sprintf("%.0f%%", score)
-}

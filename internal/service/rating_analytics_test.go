@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"ticket-score-service/internal/models"
+	"ticket-score-service/internal/utils"
 )
 
 type mockCategoryRepo struct {
@@ -408,9 +409,9 @@ func TestFormatScore(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := formatScore(tt.score)
+		result := utils.FormatScore(tt.score)
 		if result != tt.expected {
-			t.Errorf("formatScore(%.1f) = %s, expected %s", tt.score, result, tt.expected)
+			t.Errorf("FormatScore(%.1f) = %s, expected %s", tt.score, result, tt.expected)
 		}
 	}
 }

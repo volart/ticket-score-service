@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"ticket-score-service/internal/models"
+	"ticket-score-service/internal/utils"
 )
 
 // OverallQualityScore represents the aggregate quality score for a period
@@ -71,7 +72,7 @@ func (s *OverallQualityService) GetOverallQualityScore(ctx context.Context, star
 
 	if totalCount == 0 {
 		return &OverallQualityScore{
-			Period:          formatDateRange(startDate, endDate),
+			Period:          utils.FormatDateRange(startDate, endDate),
 			Score:           "N/A",
 			TotalRatings:    0,
 			ProcessingTime:  fmt.Sprintf("%dms", time.Since(startTime).Milliseconds()),
@@ -93,8 +94,8 @@ func (s *OverallQualityService) GetOverallQualityScore(ctx context.Context, star
 	}
 
 	return &OverallQualityScore{
-		Period:          formatDateRange(startDate, endDate),
-		Score:           formatScorePercent(score),
+		Period:          utils.FormatDateRange(startDate, endDate),
+		Score:           utils.FormatScore(score),
 		TotalRatings:    processedRatings,
 		ProcessingTime:  fmt.Sprintf("%dms", time.Since(startTime).Milliseconds()),
 		ChunksProcessed: chunksProcessed,
@@ -246,18 +247,3 @@ func (s *OverallQualityService) aggregateChunkResults(resultChan <-chan ChunkRes
 	return finalScore, totalRatings, chunksProcessed, nil
 }
 
-// formatDateRange formats the date range for display
-func formatDateRange(startDate, endDate time.Time) string {
-	if startDate.Equal(endDate) {
-		return startDate.Format("2006-01-02")
-	}
-	return fmt.Sprintf("%s to %s", startDate.Format("2006-01-02"), endDate.Format("2006-01-02"))
-}
-
-// formatScorePercent formats a float score as a percentage string
-func formatScorePercent(score float64) string {
-	if score == 0 {
-		return "0%"
-	}
-	return fmt.Sprintf("%.0f%%", score)
-}

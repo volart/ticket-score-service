@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"ticket-score-service/internal/models"
+	"ticket-score-service/internal/utils"
 )
 
 // TicketCategoryScore represents a score for a specific category within a ticket
@@ -139,7 +140,7 @@ func (s *TicketScoresService) calculateTicketScore(ctx context.Context, ticketID
 				if err != nil {
 					score = "N/A"
 				} else {
-					score = formatScore(calculatedScore)
+					score = utils.FormatScore(calculatedScore)
 				}
 			}
 
