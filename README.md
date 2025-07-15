@@ -1,7 +1,15 @@
 # Ticket Score Service
 
-The service should be using provided sample data from SQLite database (`database.db`). The file should be placed in the root folder of the project.
+A gRPC service for rating analytics and ticket scoring with SQLite database backend.
 
+## Features
+
+- **Rating Analytics Service**: Category-based score aggregation with daily/weekly analytics
+- **Ticket Scores Service**: Ticket scoring with server-side streaming
+
+## Database
+
+The service should be using provided sample data from SQLite database (`database.db`). The file should be placed in the root folder of the project.
 
 ## To run:
   ### Build and run locally
@@ -28,6 +36,7 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 # Generate Go code from proto files
 export PATH=$PATH:$(go env GOPATH)/bin
 protoc --go_out=. --go-grpc_out=. proto/rating_analytics.proto
+protoc --go_out=. --go-grpc_out=. proto/ticket_scores.proto
 ```
 
 **Note:** Generated files in `proto/generated/` are ignored by git and should be regenerated locally.
@@ -40,10 +49,11 @@ Install grpcurl:
 brew install grpcurl
 ```
 
-Test commands:
 ```bash
 # List available services
 grpcurl -plaintext localhost:50051 list
+
+### Rating Analytics Service
 
 # List methods for RatingAnalyticsService
 grpcurl -plaintext localhost:50051 list rating_analytics.RatingAnalyticsService
@@ -62,3 +72,16 @@ grpcurl -plaintext -d '{
 ```
 
 **Note:** Date ranges ≤ 30 days return daily scores, ranges > 30 days return weekly scores.
+
+### Ticket Scores Service
+
+```bash
+# List methods for TicketScoresService
+grpcurl -plaintext localhost:50051 list ticket_scores.TicketScoresService
+
+# Get ticket scores (server-side streaming)
+grpcurl -plaintext -d '{
+  "start_date": "2019-10-01",
+  "end_date": "2019-10-03"
+}' localhost:50051 ticket_scores.TicketScoresService/GetTicketScores
+```

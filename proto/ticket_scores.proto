@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package ticket_scores;
+
+option go_package = "ticket-score-service/proto/generated/ticket_scores";
+
+// Request message for getting ticket scores
+message GetTicketScoresRequest {
+  string start_date = 1; // Format: "2006-01-02" (YYYY-MM-DD)
+  string end_date = 2;   // Format: "2006-01-02" (YYYY-MM-DD)
+}
+
+// Represents a score for a specific category within a ticket
+message TicketCategoryScore {
+  string category_name = 1; // Category name (e.g., "Spelling", "Grammar")
+  string score = 2;         // "85%" or "N/A"
+}
+
+// Represents all category scores for a single ticket
+message TicketScore {
+  int32 ticket_id = 1;                          // Ticket ID
+  repeated TicketCategoryScore categories = 2;  // Category scores for this ticket
+}
+
+// Service definition for ticket scores operations
+service TicketScoresService {
+  // Get ticket scores for a specified date range (server-side streaming)
+  // Streams individual ticket scores for efficient processing of large datasets
+  rpc GetTicketScores(GetTicketScoresRequest) returns (stream TicketScore);
+}

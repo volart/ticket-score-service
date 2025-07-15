@@ -239,3 +239,4 @@ func (s *RatingAnalyticsService) calculatePeriodScore(ratings []models.Rating, c
 func formatScore(score float64) string {
 	return fmt.Sprintf("%.0f%%", score)
 }
+

@@ -12,7 +12,8 @@ import (
 	"ticket-score-service/internal/repository"
 	"ticket-score-service/internal/server"
 	"ticket-score-service/internal/service"
-	pb "ticket-score-service/proto/generated/rating_analytics"
+	ratingPb "ticket-score-service/proto/generated/rating_analytics"
+	ticketPb "ticket-score-service/proto/generated/ticket_scores"
 )
 
 // App represents the application with all its dependencies
@@ -41,6 +42,7 @@ func New() (*App, error) {
 	// Initialize services
 	ticketScoreService := service.NewTicketScoreService()
 	analyticsService := service.NewRatingAnalyticsService(categoryRepo, ratingsRepo, ticketScoreService)
+	ticketScoresService := service.NewTicketScoresService(categoryRepo, ratingsRepo, ticketScoreService)
 
 	// Create gRPC server
 	grpcServer := grpc.NewServer()
@@ -48,7 +50,10 @@ func New() (*App, error) {
 
 	// Register services
 	analyticsServer := server.NewRatingAnalyticsServer(analyticsService)
-	pb.RegisterRatingAnalyticsServiceServer(grpcServer, analyticsServer)
+	ratingPb.RegisterRatingAnalyticsServiceServer(grpcServer, analyticsServer)
+
+	ticketScoresServer := server.NewTicketScoresServer(ticketScoresService)
+	ticketPb.RegisterTicketScoresServiceServer(grpcServer, ticketScoresServer)
 
 	// Create listener
 	listener, err := net.Listen("tcp", ":"+cfg.Port)

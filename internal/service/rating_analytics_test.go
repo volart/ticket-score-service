@@ -39,6 +39,45 @@ func (m *mockRatingsRepo) GetByCategoryIDAndDate(ctx context.Context, categoryID
 	return []models.Rating{}, nil
 }
 
+func (m *mockRatingsRepo) GetDistinctTicketIDsByDateRange(ctx context.Context, startDate, endDate time.Time) ([]int, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+
+	ticketIDMap := make(map[int]bool)
+	for _, ratings := range m.ratingsByDate {
+		for _, rating := range ratings {
+			if rating.CreatedAt.After(startDate) && rating.CreatedAt.Before(endDate.Add(24*time.Hour)) {
+				ticketIDMap[rating.TicketID] = true
+			}
+		}
+	}
+
+	var ticketIDs []int
+	for id := range ticketIDMap {
+		ticketIDs = append(ticketIDs, id)
+	}
+
+	return ticketIDs, nil
+}
+
+func (m *mockRatingsRepo) GetByTicketIDAndCategoryID(ctx context.Context, ticketID, categoryID int) ([]models.Rating, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+
+	var results []models.Rating
+	for _, ratings := range m.ratingsByDate {
+		for _, rating := range ratings {
+			if rating.TicketID == ticketID && rating.RatingCategoryID == categoryID {
+				results = append(results, rating)
+			}
+		}
+	}
+
+	return results, nil
+}
+
 type mockTicketScoreService struct {
 	score float64
 	err   error
