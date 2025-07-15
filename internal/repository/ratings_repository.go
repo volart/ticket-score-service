@@ -133,3 +133,46 @@ func (r *RatingsRepository) GetDistinctTicketIDsByDateRange(ctx context.Context,
 
 	return ticketIDs, nil
 }
+
+// GetByDateRangePaginated gets paginated ratings for a date range
+func (r *RatingsRepository) GetByDateRangePaginated(ctx context.Context, startDate, endDate time.Time, limit, offset int) ([]models.Rating, error) {
+	query := `SELECT id, rating, ticket_id, rating_category_id, reviewer_id, reviewee_id, created_at
+			  FROM ratings
+			  WHERE created_at >= ? AND created_at < ?
+			  ORDER BY created_at
+			  LIMIT ? OFFSET ?`
+
+	rows, err := r.db.QueryContext(ctx, query, startDate, endDate, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query paginated ratings: %w", err)
+	}
+	defer rows.Close()
+
+	var ratings []models.Rating
+	for rows.Next() {
+		var rating models.Rating
+		if err := rows.Scan(&rating.ID, &rating.Rating, &rating.TicketID, &rating.RatingCategoryID, &rating.ReviewerID, &rating.RevieweeID, &rating.CreatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan rating: %w", err)
+		}
+		ratings = append(ratings, rating)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
+
+	return ratings, nil
+}
+
+// CountByDateRange counts total ratings for a date range
+func (r *RatingsRepository) CountByDateRange(ctx context.Context, startDate, endDate time.Time) (int, error) {
+	query := `SELECT COUNT(*) FROM ratings WHERE created_at >= ? AND created_at < ?`
+
+	var count int
+	err := r.db.QueryRowContext(ctx, query, startDate, endDate).Scan(&count)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count ratings: %w", err)
+	}
+
+	return count, nil
+}

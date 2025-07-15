@@ -21,23 +21,17 @@ type TicketScore struct {
 	Categories []TicketCategoryScore `json:"categories"`
 }
 
-// TicketScoresRepository defines the interface for ticket-related rating queries
-type TicketScoresRepository interface {
-	GetDistinctTicketIDsByDateRange(ctx context.Context, startDate, endDate time.Time) ([]int, error)
-	GetByTicketIDAndCategoryID(ctx context.Context, ticketID, categoryID int) ([]models.Rating, error)
-}
-
 // TicketScoresService handles ticket score calculations
 type TicketScoresService struct {
 	categoryRepo    CategoryRepository
-	ratingsRepo     TicketScoresRepository
+	ratingsRepo     RatingsRepository
 	ticketScoreServ ScoreCalculator
 }
 
 // NewTicketScoresService creates a new ticket scores service instance
 func NewTicketScoresService(
 	categoryRepo CategoryRepository,
-	ratingsRepo TicketScoresRepository,
+	ratingsRepo RatingsRepository,
 	ticketScoreServ ScoreCalculator,
 ) *TicketScoresService {
 	return &TicketScoresService{
@@ -78,7 +72,7 @@ func (s *TicketScoresService) GetTicketScores(ctx context.Context, startDate, en
 			wg.Add(1)
 			go func(tID int) {
 				defer wg.Done()
-				semaphore <- struct{}{} // Acquire
+				semaphore <- struct{}{}        // Acquire
 				defer func() { <-semaphore }() // Release
 
 				ticketScore, err := s.calculateTicketScore(ctx, tID, categories)

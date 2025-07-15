@@ -78,6 +78,51 @@ func (m *mockRatingsRepo) GetByTicketIDAndCategoryID(ctx context.Context, ticket
 	return results, nil
 }
 
+func (m *mockRatingsRepo) GetByDateRangePaginated(ctx context.Context, startDate, endDate time.Time, limit, offset int) ([]models.Rating, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	
+	// For testing, collect all ratings within date range and apply pagination
+	var allRatings []models.Rating
+	for _, ratings := range m.ratingsByDate {
+		for _, rating := range ratings {
+			if rating.CreatedAt.After(startDate) && rating.CreatedAt.Before(endDate.Add(24*time.Hour)) {
+				allRatings = append(allRatings, rating)
+			}
+		}
+	}
+	
+	// Apply pagination
+	if offset >= len(allRatings) {
+		return []models.Rating{}, nil
+	}
+	
+	end := offset + limit
+	if end > len(allRatings) {
+		end = len(allRatings)
+	}
+	
+	return allRatings[offset:end], nil
+}
+
+func (m *mockRatingsRepo) CountByDateRange(ctx context.Context, startDate, endDate time.Time) (int, error) {
+	if m.err != nil {
+		return 0, m.err
+	}
+	
+	count := 0
+	for _, ratings := range m.ratingsByDate {
+		for _, rating := range ratings {
+			if rating.CreatedAt.After(startDate) && rating.CreatedAt.Before(endDate.Add(24*time.Hour)) {
+				count++
+			}
+		}
+	}
+	
+	return count, nil
+}
+
 type mockTicketScoreService struct {
 	score float64
 	err   error

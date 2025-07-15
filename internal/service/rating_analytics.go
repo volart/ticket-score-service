@@ -26,6 +26,10 @@ type CategoryRepository interface {
 
 type RatingsRepository interface {
 	GetByCategoryIDAndDate(ctx context.Context, categoryID int, date time.Time) ([]models.Rating, error)
+	GetByDateRangePaginated(ctx context.Context, startDate, endDate time.Time, limit, offset int) ([]models.Rating, error)
+	CountByDateRange(ctx context.Context, startDate, endDate time.Time) (int, error)
+	GetDistinctTicketIDsByDateRange(ctx context.Context, startDate, endDate time.Time) ([]int, error)
+	GetByTicketIDAndCategoryID(ctx context.Context, ticketID, categoryID int) ([]models.Rating, error)
 }
 
 type ScoreCalculator interface {
@@ -239,4 +243,3 @@ func (s *RatingAnalyticsService) calculatePeriodScore(ratings []models.Rating, c
 func formatScore(score float64) string {
 	return fmt.Sprintf("%.0f%%", score)
 }
-
