@@ -39,6 +39,7 @@ export PATH=$PATH:$(go env GOPATH)/bin
 protoc --go_out=. --go-grpc_out=. proto/generated/rating_analytics/rating_analytics.proto
 protoc --go_out=. --go-grpc_out=. proto/generated/ticket_scores/ticket_scores.proto
 protoc --go_out=. --go-grpc_out=. proto/generated/overall_quality/overall_quality.proto
+protoc --go_out=. --go-grpc_out=. proto/generated/period_comparison/period_comparison.proto
 ```
 
 **Note:** Generated files in `proto/generated/` are ignored by git and should be regenerated locally.

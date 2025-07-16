@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package period_comparison;
+
+option go_package = "ticket-score-service/proto/generated/period_comparison";
+
+// Enumeration for different period comparison types
+enum PeriodType {
+  WEEK = 0;    // Week over week comparison
+  MONTH = 1;   // Month over month comparison
+  QUARTER = 2; // Quarter over quarter comparison
+  YEAR = 3;    // Year over year comparison
+}
+
+// Request message for getting period over period comparison
+message GetPeriodComparisonRequest {
+  string start_date = 1;      // Format: "2006-01-02" (YYYY-MM-DD)
+  string end_date = 2;        // Format: "2006-01-02" (YYYY-MM-DD)
+  PeriodType period_type = 3; // Type of period comparison
+}
+
+// Response message containing period comparison
+message GetPeriodComparisonResponse {
+  string start_period = 1; // Previous period date range (e.g., "2024-01-01 to 2024-01-07")
+  string start_score = 2;  // Previous period score (e.g., "85%")
+  string end_period = 3;   // Current period date range (e.g., "2024-01-08 to 2024-01-14")
+  string end_score = 4;    // Current period score (e.g., "90%")
+  string difference = 5;   // Difference in percentage points (e.g., "+5%", "-3%")
+}
+
+// Service definition for period comparison operations
+service PeriodComparisonService {
+  // Get period over period comparison
+  // Compares the specified period with the equivalent previous period
+  rpc GetPeriodComparison(GetPeriodComparisonRequest) returns (GetPeriodComparisonResponse);
+}
