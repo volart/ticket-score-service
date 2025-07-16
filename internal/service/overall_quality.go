@@ -12,12 +12,8 @@ import (
 
 // OverallQualityScore represents the aggregate quality score for a period
 type OverallQualityScore struct {
-	Period          string `json:"period"`
-	Score           string `json:"score"`
-	TotalRatings    int    `json:"totalRatings"`
-	ProcessingTime  string `json:"processingTime"`
-	ChunksProcessed int    `json:"chunksProcessed"`
-	Goroutines      int    `json:"goroutines"`
+	Period string `json:"period"`
+	Score  string `json:"score"`
 }
 
 // ChunkResult represents the result of processing a single chunk
@@ -62,8 +58,6 @@ func NewOverallQualityService(
 
 // GetOverallQualityScore calculates overall quality score using concurrent pagination processing
 func (s *OverallQualityService) GetOverallQualityScore(ctx context.Context, startDate, endDate time.Time) (*OverallQualityScore, error) {
-	startTime := time.Now()
-
 	// Get total count
 	totalCount, err := s.ratingsRepo.CountByDateRange(ctx, startDate, endDate)
 	if err != nil {
@@ -72,12 +66,8 @@ func (s *OverallQualityService) GetOverallQualityScore(ctx context.Context, star
 
 	if totalCount == 0 {
 		return &OverallQualityScore{
-			Period:          utils.FormatDateRange(startDate, endDate),
-			Score:           "N/A",
-			TotalRatings:    0,
-			ProcessingTime:  fmt.Sprintf("%dms", time.Since(startTime).Milliseconds()),
-			ChunksProcessed: 0,
-			Goroutines:      0,
+			Period: utils.FormatDateRange(startDate, endDate),
+			Score:  "N/A",
 		}, nil
 	}
 
@@ -88,18 +78,14 @@ func (s *OverallQualityService) GetOverallQualityScore(ctx context.Context, star
 	}
 
 	// Process chunks concurrently
-	score, processedRatings, chunksProcessed, err := s.processChunksConcurrently(ctx, startDate, endDate, totalCount, categories)
+	score, err := s.processChunksConcurrently(ctx, startDate, endDate, totalCount, categories)
 	if err != nil {
 		return nil, fmt.Errorf("failed to process chunks: %w", err)
 	}
 
 	return &OverallQualityScore{
-		Period:          utils.FormatDateRange(startDate, endDate),
-		Score:           utils.FormatScore(score),
-		TotalRatings:    processedRatings,
-		ProcessingTime:  fmt.Sprintf("%dms", time.Since(startTime).Milliseconds()),
-		ChunksProcessed: chunksProcessed,
-		Goroutines:      s.maxGoroutines,
+		Period: utils.FormatDateRange(startDate, endDate),
+		Score:  utils.FormatScore(score),
 	}, nil
 }
 
@@ -109,7 +95,7 @@ func (s *OverallQualityService) processChunksConcurrently(
 	startDate, endDate time.Time,
 	totalCount int,
 	categories []models.RatingCategory,
-) (float64, int, int, error) {
+) (float64, error) {
 
 	// Calculate number of chunks
 	numChunks := (totalCount + s.chunkSize - 1) / s.chunkSize
@@ -211,12 +197,10 @@ func (s *OverallQualityService) calculateChunkWeightedScore(ratings []models.Rat
 }
 
 // aggregateChunkResults combines results from all chunks
-func (s *OverallQualityService) aggregateChunkResults(resultChan <-chan ChunkResult, expectedChunks int) (float64, int, int, error) {
+func (s *OverallQualityService) aggregateChunkResults(resultChan <-chan ChunkResult, expectedChunks int) (float64, error) {
 	var (
 		totalWeightedScore = 0.0
 		totalMaxScore      = 0.0
-		totalRatings       = 0
-		chunksProcessed    = 0
 		errors             []error
 	)
 
@@ -229,13 +213,11 @@ func (s *OverallQualityService) aggregateChunkResults(resultChan <-chan ChunkRes
 
 		totalWeightedScore += result.WeightedScore
 		totalMaxScore += result.MaxScore
-		totalRatings += result.RatingCount
-		chunksProcessed++
 	}
 
 	// Check if we have any errors
 	if len(errors) > 0 {
-		return 0, 0, 0, fmt.Errorf("chunk processing errors: %v", errors)
+		return 0, fmt.Errorf("chunk processing errors: %v", errors)
 	}
 
 	// Calculate final percentage
@@ -244,5 +226,5 @@ func (s *OverallQualityService) aggregateChunkResults(resultChan <-chan ChunkRes
 		finalScore = (totalWeightedScore / totalMaxScore) * 100
 	}
 
-	return finalScore, totalRatings, chunksProcessed, nil
+	return finalScore, nil
 }

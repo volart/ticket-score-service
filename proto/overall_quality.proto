@@ -14,10 +14,6 @@ message GetOverallQualityScoreRequest {
 message GetOverallQualityScoreResponse {
   string period = 1;            // Date range formatted as "YYYY-MM-DD to YYYY-MM-DD"
   string score = 2;             // Formatted percentage score (e.g., "85%")
-  int32 total_ratings = 3;      // Total number of ratings processed
-  string processing_time = 4;   // Processing time in milliseconds (e.g., "150ms")
-  int32 chunks_processed = 5;   // Number of chunks processed
-  int32 goroutines = 6;         // Number of goroutines used
 }
 
 // Service definition for overall quality operations

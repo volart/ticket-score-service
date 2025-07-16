@@ -60,12 +60,8 @@ func (s *OverallQualityServer) GetOverallQualityScore(ctx context.Context, req *
 
 	// Convert to proto response
 	response := &pb.GetOverallQualityScoreResponse{
-		Period:           result.Period,
-		Score:            result.Score,
-		TotalRatings:     int32(result.TotalRatings),
-		ProcessingTime:   result.ProcessingTime,
-		ChunksProcessed:  int32(result.ChunksProcessed),
-		Goroutines:       int32(result.Goroutines),
+		Period: result.Period,
+		Score:  result.Score,
 	}
 
 	return response, nil

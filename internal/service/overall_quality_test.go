@@ -15,20 +15,15 @@ func TestGetOverallQualityScore(t *testing.T) {
 	endDate := time.Date(2019, 10, 7, 0, 0, 0, 0, time.UTC)
 
 	tests := []struct {
-		name               string
-		categories         []models.RatingCategory
-		paginatedRatings   map[string][]models.Rating
-		totalCount         int
-		chunkSize          int
-		maxGoroutines      int
-		expectedScore      string
-		expectedTotal      int
-		expectedChunks     int
-		expectedGoroutines int
-		countErr           error
-		paginationErr      error
-		categoryErr        error
-		expectError        bool
+		name             string
+		categories       []models.RatingCategory
+		paginatedRatings map[string][]models.Rating
+		totalCount       int
+		expectedScore    string
+		countErr         error
+		paginationErr    error
+		categoryErr      error
+		expectError      bool
 	}{
 		{
 			name: "successful overall quality calculation",
@@ -37,42 +32,27 @@ func TestGetOverallQualityScore(t *testing.T) {
 				{ID: 2, Name: "Grammar", Weight: 5.0},
 			},
 			paginatedRatings: map[string][]models.Rating{
-				"5:0": {
+				"8:0": {
 					{ID: 1, RatingCategoryID: 1, Rating: 4},
 					{ID: 2, RatingCategoryID: 1, Rating: 5},
 					{ID: 3, RatingCategoryID: 2, Rating: 3},
 					{ID: 4, RatingCategoryID: 2, Rating: 4},
 					{ID: 5, RatingCategoryID: 1, Rating: 5},
 				},
-				"5:5": {
-					{ID: 6, RatingCategoryID: 2, Rating: 4},
-					{ID: 7, RatingCategoryID: 1, Rating: 5},
-					{ID: 8, RatingCategoryID: 2, Rating: 3},
-				},
 			},
-			totalCount:         8,
-			chunkSize:          5,
-			maxGoroutines:      3,
-			expectedScore:      "88%", // Calculated based on weighted average
-			expectedTotal:      5,     // Total ratings processed
-			expectedChunks:     2,     // (8 + 5 - 1) / 5 = 2
-			expectedGoroutines: 3,
-			expectError:        false,
+			totalCount:    8,
+			expectedScore: "88%", // Calculated based on weighted average
+			expectError:   false,
 		},
 		{
 			name: "no ratings in period",
 			categories: []models.RatingCategory{
 				{ID: 1, Name: "Spelling", Weight: 10.0},
 			},
-			paginatedRatings:   map[string][]models.Rating{},
-			totalCount:         0,
-			chunkSize:          5,
-			maxGoroutines:      3,
-			expectedScore:      "N/A",
-			expectedTotal:      0,
-			expectedChunks:     0,
-			expectedGoroutines: 0,
-			expectError:        false,
+			paginatedRatings: map[string][]models.Rating{},
+			totalCount:       0,
+			expectedScore:    "N/A",
+			expectError:      false,
 		},
 		{
 			name: "single chunk processing",
@@ -85,14 +65,9 @@ func TestGetOverallQualityScore(t *testing.T) {
 					{ID: 2, RatingCategoryID: 1, Rating: 5},
 				},
 			},
-			totalCount:         2,
-			chunkSize:          10,
-			maxGoroutines:      5,
-			expectedScore:      "100%", // Perfect scores
-			expectedTotal:      2,
-			expectedChunks:     1,
-			expectedGoroutines: 5,
-			expectError:        false,
+			totalCount:    2,
+			expectedScore: "100%", // Perfect scores
+			expectError:   false,
 		},
 		{
 			name: "multiple chunks with different category weights",
@@ -102,24 +77,17 @@ func TestGetOverallQualityScore(t *testing.T) {
 				{ID: 3, Name: "Clarity", Weight: 5.0},
 			},
 			paginatedRatings: map[string][]models.Rating{
-				"3:0": {
+				"5:0": {
 					{ID: 1, RatingCategoryID: 1, Rating: 4}, // weight 20
 					{ID: 2, RatingCategoryID: 2, Rating: 3}, // weight 10
 					{ID: 3, RatingCategoryID: 3, Rating: 5}, // weight 5
-				},
-				"2:3": {
 					{ID: 4, RatingCategoryID: 1, Rating: 5}, // weight 20
 					{ID: 5, RatingCategoryID: 2, Rating: 4}, // weight 10
 				},
 			},
-			totalCount:         5,
-			chunkSize:          3,
-			maxGoroutines:      2,
-			expectedScore:      "85%", // Weighted calculation
-			expectedTotal:      5,
-			expectedChunks:     2,
-			expectedGoroutines: 2,
-			expectError:        false,
+			totalCount:    5,
+			expectedScore: "85%", // Weighted calculation
+			expectError:   false,
 		},
 		{
 			name: "error counting ratings",
@@ -148,7 +116,6 @@ func TestGetOverallQualityScore(t *testing.T) {
 			},
 			paginatedRatings: map[string][]models.Rating{},
 			totalCount:       5,
-			chunkSize:        5,
 			paginationErr:    errors.New("pagination query failed"),
 			expectError:      true,
 		},
@@ -158,18 +125,11 @@ func TestGetOverallQualityScore(t *testing.T) {
 				{ID: 1, Name: "Spelling", Weight: 10.0},
 			},
 			paginatedRatings: map[string][]models.Rating{
-				"100:0":   generateRatings(1, 100, 1, 4),
-				"100:100": generateRatings(101, 100, 1, 5),
-				"100:200": generateRatings(201, 50, 1, 3),
+				"250:0": append(append(generateRatings(1, 100, 1, 4), generateRatings(101, 100, 1, 5)...), generateRatings(201, 50, 1, 3)...),
 			},
-			totalCount:         250,
-			chunkSize:          100,
-			maxGoroutines:      5,
-			expectedScore:      "90%", // Mix of ratings 4, 5, 3
-			expectedTotal:      200,
-			expectedChunks:     3,
-			expectedGoroutines: 5,
-			expectError:        false,
+			totalCount:    250,
+			expectedScore: "84%", // Mix of ratings 4, 5, 3: (100*4 + 100*5 + 50*3) / (250*5) = 1050/1250 = 0.84 = 84%
+			expectError:   false,
 		},
 	}
 
@@ -188,7 +148,7 @@ func TestGetOverallQualityScore(t *testing.T) {
 				err:        tt.categoryErr,
 			}
 
-			// Create service with custom configuration
+			// Create service
 			service := NewOverallQualityService(mockRatingsRepo, mockCategoryRepo)
 
 			// Execute
@@ -213,29 +173,12 @@ func TestGetOverallQualityScore(t *testing.T) {
 				t.Errorf("Expected score %s, got %s", tt.expectedScore, result.Score)
 			}
 
-			if result.TotalRatings != tt.expectedTotal {
-				t.Errorf("Expected total ratings %d, got %d", tt.expectedTotal, result.TotalRatings)
-			}
-
-			if result.ChunksProcessed != tt.expectedChunks {
-				t.Errorf("Expected chunks processed %d, got %d", tt.expectedChunks, result.ChunksProcessed)
-			}
-
-			if result.Goroutines != tt.expectedGoroutines {
-				t.Errorf("Expected goroutines %d, got %d", tt.expectedGoroutines, result.Goroutines)
-			}
-
 			// All processing is done via paginated method
 
 			// Verify period format
 			expectedPeriod := "2019-10-01 to 2019-10-07"
 			if result.Period != expectedPeriod {
 				t.Errorf("Expected period %s, got %s", expectedPeriod, result.Period)
-			}
-
-			// Verify processing time is set
-			if result.ProcessingTime == "" {
-				t.Errorf("Expected processing time to be set")
 			}
 		})
 	}
@@ -252,8 +195,6 @@ func TestProcessChunksConcurrently(t *testing.T) {
 		totalCount       int
 		paginatedRatings map[string][]models.Rating
 		expectedScore    float64
-		expectedTotal    int
-		expectedChunks   int
 		paginationErr    error
 		expectError      bool
 	}{
@@ -261,21 +202,17 @@ func TestProcessChunksConcurrently(t *testing.T) {
 			name:       "successful concurrent processing",
 			totalCount: 6,
 			paginatedRatings: map[string][]models.Rating{
-				"3:0": {
+				"6:0": {
 					{ID: 1, RatingCategoryID: 1, Rating: 4},
 					{ID: 2, RatingCategoryID: 2, Rating: 3},
 					{ID: 3, RatingCategoryID: 1, Rating: 5},
-				},
-				"3:3": {
 					{ID: 4, RatingCategoryID: 2, Rating: 4},
 					{ID: 5, RatingCategoryID: 1, Rating: 5},
 					{ID: 6, RatingCategoryID: 2, Rating: 5},
 				},
 			},
-			expectedScore:  88.89, // Weighted calculation
-			expectedTotal:  6,
-			expectedChunks: 2,
-			expectError:    false,
+			expectedScore: 200.0 / 225.0 * 100, // Weighted calculation: (140+60)/(150+75)*100 = 88.888...%
+			expectError:   false,
 		},
 		{
 			name:       "single chunk processing",
@@ -286,10 +223,8 @@ func TestProcessChunksConcurrently(t *testing.T) {
 					{ID: 2, RatingCategoryID: 1, Rating: 5},
 				},
 			},
-			expectedScore:  100.0,
-			expectedTotal:  2,
-			expectedChunks: 1,
-			expectError:    false,
+			expectedScore: 100.0,
+			expectError:   false,
 		},
 		{
 			name:       "error in chunk processing",
@@ -307,8 +242,6 @@ func TestProcessChunksConcurrently(t *testing.T) {
 			totalCount:       0,
 			paginatedRatings: map[string][]models.Rating{},
 			expectedScore:    0.0,
-			expectedTotal:    0,
-			expectedChunks:   0,
 			expectError:      false,
 		},
 	}
@@ -331,7 +264,7 @@ func TestProcessChunksConcurrently(t *testing.T) {
 			startDate := time.Date(2019, 10, 1, 0, 0, 0, 0, time.UTC)
 			endDate := time.Date(2019, 10, 7, 0, 0, 0, 0, time.UTC)
 
-			score, totalRatings, chunksProcessed, err := service.processChunksConcurrently(
+			score, err := service.processChunksConcurrently(
 				ctx, startDate, endDate, tt.totalCount, categories)
 
 			if tt.expectError {
@@ -346,17 +279,9 @@ func TestProcessChunksConcurrently(t *testing.T) {
 				return
 			}
 
-			// Allow for small floating point differences
-			if abs(score-tt.expectedScore) > 0.1 {
-				t.Errorf("Expected score %.2f, got %.2f", tt.expectedScore, score)
-			}
-
-			if totalRatings != tt.expectedTotal {
-				t.Errorf("Expected total ratings %d, got %d", tt.expectedTotal, totalRatings)
-			}
-
-			if chunksProcessed != tt.expectedChunks {
-				t.Errorf("Expected chunks processed %d, got %d", tt.expectedChunks, chunksProcessed)
+			// Allow for small floating point differences due to division
+			if score != tt.expectedScore {
+				t.Errorf("Expected score %.6f, got %.6f", tt.expectedScore, score)
 			}
 		})
 	}
@@ -418,11 +343,11 @@ func TestCalculateChunkWeightedScore(t *testing.T) {
 
 			weightedSum, maxSum := service.calculateChunkWeightedScore(tt.ratings, categories)
 
-			if abs(weightedSum-tt.expectedWeightedSum) > 0.01 {
+			if weightedSum != tt.expectedWeightedSum {
 				t.Errorf("Expected weighted sum %.2f, got %.2f", tt.expectedWeightedSum, weightedSum)
 			}
 
-			if abs(maxSum-tt.expectedMaxSum) > 0.01 {
+			if maxSum != tt.expectedMaxSum {
 				t.Errorf("Expected max sum %.2f, got %.2f", tt.expectedMaxSum, maxSum)
 			}
 		})
@@ -455,14 +380,12 @@ func TestContextCancellation(t *testing.T) {
 	endDate := time.Date(2019, 10, 7, 0, 0, 0, 0, time.UTC)
 
 	// This should handle context cancellation gracefully
-	_, _, _, err := service.processChunksConcurrently(ctx, startDate, endDate, 1, categories)
+	_, err := service.GetOverallQualityScore(ctx, startDate, endDate)
 
 	if err == nil {
 		t.Errorf("Expected error due to context cancellation, got none")
 	}
 }
-
-// Helper functions
 
 // generateRatings creates a slice of test ratings
 func generateRatings(startID, count, categoryID, rating int) []models.Rating {
@@ -475,12 +398,4 @@ func generateRatings(startID, count, categoryID, rating int) []models.Rating {
 		}
 	}
 	return ratings
-}
-
-// abs returns the absolute value of a float64
-func abs(x float64) float64 {
-	if x < 0 {
-		return -x
-	}
-	return x
 }
