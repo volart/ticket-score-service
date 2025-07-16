@@ -24,7 +24,7 @@ func NewTicketScoresServer(ticketScoresService *service.TicketScoresService) *Ti
 	}
 }
 
-// GetTicketScores handles the gRPC streaming request for ticket scores  
+// GetTicketScores handles the gRPC streaming request for ticket scores
 func (s *TicketScoresServer) GetTicketScores(req *pb.GetTicketScoresRequest, stream grpc.ServerStreamingServer[pb.TicketScore]) error {
 	// Validate request
 	if req.StartDate == "" || req.EndDate == "" {
