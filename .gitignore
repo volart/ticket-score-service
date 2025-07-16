@@ -9,4 +9,4 @@ proto/generated/
 *.pb
 
 # Compiled binaries
-server
+bin/

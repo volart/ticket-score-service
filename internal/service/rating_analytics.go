@@ -240,4 +240,3 @@ func (s *RatingAnalyticsService) calculatePeriodScore(ratings []models.Rating, c
 		Score: utils.FormatScore(score),
 	}
 }
-

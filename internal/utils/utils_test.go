@@ -90,8 +90,8 @@ func TestFormatDateRange(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			result := FormatDateRange(tt.startDate, tt.endDate)
 			if result != tt.expected {
-				t.Errorf("FormatDateRange(%v, %v) = %s, expected %s", 
-					tt.startDate.Format("2006-01-02"), tt.endDate.Format("2006-01-02"), 
+				t.Errorf("FormatDateRange(%v, %v) = %s, expected %s",
+					tt.startDate.Format("2006-01-02"), tt.endDate.Format("2006-01-02"),
 					result, tt.expected)
 			}
 		})

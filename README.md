@@ -13,38 +13,48 @@ A gRPC service for rating analytics, ticket scoring, and overall quality assessm
 
 The service should be using provided sample data from SQLite database (`database.db`). The file should be placed in the root folder of the project.
 
-## To run:
-  ### Build and run locally
-  go run cmd/server/main.go
+## Quick Start
 
-  ### Build and run with Docker
-  docker build -t ticket-score-service .
-  docker run -p 50051:50051 ticket-score-service
+### Using Makefile
+```bash
+# Setup development environment (install tools and generate proto files)
+make setup
 
-  ### Run in background with docker
-  docker-compose up -d
+# Start the server
+make start
+
+# Run tests
+make test
+
+# See all available commands
+make help
+
+# Build and run locally
+make build
+make run
+
+# Build and run with Docker
+make docker-build
+make  docker-run
+
+# Run in background with docker
+make docker-compose-up
+```
 
 ## Development
 
 ### gRPC Code Generation
 
-To regenerate the gRPC code from proto files:
-
+#### Using Makefile (Recommended)
 ```bash
-# Install required tools
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+# Install tools and generate all proto files
+make setup
 
-# Generate Go code from proto files
-export PATH=$PATH:$(go env GOPATH)/bin
-mkdir -p ./proto/generated/rating_analytics
-mkdir -p ./proto/generated/ticket_scores
-mkdir -p ./proto/generated/overall_quality
-mkdir -p ./proto/generated/period_comparison
-protoc --go_out=. --go-grpc_out=. proto/rating_analytics.proto
-protoc --go_out=. --go-grpc_out=. proto/ticket_scores.proto
-protoc --go_out=. --go-grpc_out=. proto/overall_quality.proto
-protoc --go_out=. --go-grpc_out=. proto/period_comparison.proto
+# Or just generate proto files (if tools already installed)
+make proto
+
+# Clean generated files
+make clean-proto
 ```
 
 **Note:** Generated files in `proto/generated/` are ignored by git and should be regenerated locally.
@@ -280,16 +290,10 @@ grpcurl -plaintext -d '{
 
 ## Testing
 
-Run the test suite:
-
+### Using Makefile (Recommended)
 ```bash
 # Run all tests
-go test ./...
+make test
 
 # Run tests with verbose output
-go test -v ./...
-
-# Run tests for specific package
-go test -v ./internal/service
-go test -v ./internal/server
-```
+make test-verbose

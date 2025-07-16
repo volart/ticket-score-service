@@ -186,13 +186,13 @@ func TestOverallQualityServer_GetOverallQualityScore(t *testing.T) {
 func TestOverallQualityServer_DateParsing(t *testing.T) {
 	// Test various date formats to ensure proper validation
 	invalidDates := []string{
-		"2024-1-1",       // Single digit month/day
-		"2024/01/01",     // Wrong separator
-		"01-01-2024",     // Wrong order
-		"2024-13-01",     // Invalid month
-		"2024-01-32",     // Invalid day
-		"not-a-date",     // Not a date
-		"",               // Empty string
+		"2024-1-1",             // Single digit month/day
+		"2024/01/01",           // Wrong separator
+		"01-01-2024",           // Wrong order
+		"2024-13-01",           // Invalid month
+		"2024-01-32",           // Invalid day
+		"not-a-date",           // Not a date
+		"",                     // Empty string
 		"2024-01-01T00:00:00Z", // ISO format with time
 	}
 

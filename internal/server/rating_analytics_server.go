@@ -70,7 +70,6 @@ func (s *RatingAnalyticsServer) GetCategoryAnalytics(ctx context.Context, req *p
 	return response, nil
 }
 
-
 // convertDailyScores converts service layer DailyScore to proto DailyScore
 func convertDailyScores(dailyScores []service.DailyScore) []*pb.DailyScore {
 	protoScores := make([]*pb.DailyScore, len(dailyScores))
