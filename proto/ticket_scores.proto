@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ticket_scores;
 
-option go_package = "ticket-score-service/proto/generated/ticket_scores";
+option go_package = "./proto/generated/ticket_scores";
 
 // Request message for getting ticket scores
 message GetTicketScoresRequest {

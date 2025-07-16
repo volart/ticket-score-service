@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package period_comparison;
 
-option go_package = "ticket-score-service/proto/generated/period_comparison";
+option go_package = "./proto/generated/period_comparison";
 
 // Enumeration for different period comparison types
 enum PeriodType {

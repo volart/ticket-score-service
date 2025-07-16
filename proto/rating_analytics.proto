@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package rating_analytics;
 
-option go_package = "ticket-score-service/proto/generated/rating_analytics";
+option go_package = "./proto/generated/rating_analytics";
 
 // Request message for getting category analytics
 message GetCategoryAnalyticsRequest {

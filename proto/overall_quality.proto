@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package overall_quality;
 
-option go_package = "ticket-score-service/proto/generated/overall_quality";
+option go_package = "./proto/generated/overall_quality";
 
 // Request message for getting overall quality score
 message GetOverallQualityScoreRequest {
