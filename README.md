@@ -40,9 +40,9 @@ mkdir -p ./proto/generated/rating_analytics
 mkdir -p ./proto/generated/ticket_scores
 mkdir -p ./proto/generated/overall_quality
 mkdir -p ./proto/generated/period_comparison
-protoc --go_out=./proto/generated/rating_analytics --go-grpc_out=./proto/generated/rating_analytics proto/rating_analytics.proto
-protoc --go_out=./proto/generated/rating_analytics --go-grpc_out=./proto/generated/rating_analytics proto/ticket_scores.proto
-protoc --go_out=./proto/generated/rating_analytics --go-grpc_out=./proto/generated/rating_analytics proto/overall_quality.proto
+protoc --go_out=. --go-grpc_out=. proto/rating_analytics.proto
+protoc --go_out=. --go-grpc_out=. proto/ticket_scores.proto
+protoc --go_out=. --go-grpc_out=. proto/overall_quality.proto
 protoc --go_out=. --go-grpc_out=. proto/period_comparison.proto
 ```
 
