@@ -257,10 +257,10 @@ grpcurl -plaintext -d '{
 **Response format:**
 ```json
 {
-  "start_period": "2019-10-01 to 2019-10-07",
-  "start_score": "82%",
-  "end_period": "2019-10-08 to 2019-10-14",
-  "end_score": "89%",
+  "start_period": "2019-10-08 to 2019-10-14",
+  "start_score": "89%",
+  "end_period": "2019-10-01 to 2019-10-07",
+  "end_score": "82%",
   "difference": "+8.5%"
 }
 ```
@@ -270,6 +270,7 @@ grpcurl -plaintext -d '{
 - Calculates consecutive periods
 - Shows true percentage change, not just difference
 - Supports WEEK, MONTH, QUARTER, and YEAR comparisons
+- Period Order: `start_period` = most recent period, `end_period` = older period
 
 **Period Calculation Examples:**
 - **WEEK**: `2019-10-01` → Period 1: `2019-10-01 to 2019-10-07`, Period 2: `2019-10-08 to 2019-10-14`

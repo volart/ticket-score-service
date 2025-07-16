@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -47,14 +46,14 @@ func (s *PeriodComparisonService) GetPeriodComparison(
 		return nil, fmt.Errorf("failed to get second period score: %w", err)
 	}
 
-	// Calculate difference
+	// Calculate difference (from first to second period)
 	difference := s.calculateDifference(firstPeriodScore.Score, secondPeriodScore.Score)
 
 	return &PeriodComparisonResult{
-		StartPeriod: firstPeriodScore.Period,
-		StartScore:  firstPeriodScore.Score,
-		EndPeriod:   secondPeriodScore.Period,
-		EndScore:    secondPeriodScore.Score,
+		StartPeriod: secondPeriodScore.Period, // Most recent period (second)
+		StartScore:  secondPeriodScore.Score,  // Most recent score (second)
+		EndPeriod:   firstPeriodScore.Period,  // Older period (first)
+		EndScore:    firstPeriodScore.Score,   // Older score (first)
 		Difference:  difference,
 	}, nil
 }
@@ -82,15 +81,15 @@ func (s *PeriodComparisonService) calculateDifference(firstScore, secondScore st
 	}
 
 	// Handle division by zero
-	if value2 == 0 {
-		if value1 == 0 {
+	if value1 == 0 {
+		if value2 == 0 {
 			return "0.0%"
 		}
 		return "N/A" // Cannot calculate percentage change from zero
 	}
 
 	// Calculate relative percentage change: ((value2 - value1) / value1) * 100
-	relativeChange := ((math.Abs(value1 - value2)) / value2) * 100
+	relativeChange := ((value2 - value1) / value1) * 100
 
 	// Format the relative change with proper sign to 1 decimal place
 	if relativeChange > 0 {
