@@ -13,6 +13,7 @@ import (
 	"ticket-score-service/internal/server"
 	"ticket-score-service/internal/service"
 	overallQualityPb "ticket-score-service/proto/generated/overall_quality"
+	periodComparisonPb "ticket-score-service/proto/generated/period_comparison"
 	ratingPb "ticket-score-service/proto/generated/rating_analytics"
 	ticketPb "ticket-score-service/proto/generated/ticket_scores"
 )
@@ -45,7 +46,7 @@ func New() (*App, error) {
 	analyticsService := service.NewRatingAnalyticsService(categoryRepo, ratingsRepo, ticketScoreService)
 	ticketScoresService := service.NewTicketScoresService(categoryRepo, ratingsRepo, ticketScoreService)
 	overallQualityService := service.NewOverallQualityService(ratingsRepo, categoryRepo)
-	// periodComparisonService := service.NewPeriodComparisonService(overallQualityService)
+	periodComparisonService := service.NewPeriodComparisonService(overallQualityService)
 
 	// Create gRPC server
 	grpcServer := grpc.NewServer()
@@ -60,6 +61,9 @@ func New() (*App, error) {
 
 	overallQualityServer := server.NewOverallQualityServer(overallQualityService)
 	overallQualityPb.RegisterOverallQualityServiceServer(grpcServer, overallQualityServer)
+
+	periodComparisonServer := server.NewPeriodComparisonServer(periodComparisonService)
+	periodComparisonPb.RegisterPeriodComparisonServiceServer(grpcServer, periodComparisonServer)
 
 	// Create listener
 	listener, err := net.Listen("tcp", ":"+cfg.Port)

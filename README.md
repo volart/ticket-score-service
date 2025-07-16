@@ -7,6 +7,7 @@ A gRPC service for rating analytics, ticket scoring, and overall quality assessm
 - **Rating Analytics Service**: Category-based score aggregation with daily/weekly analytics
 - **Ticket Scores Service**: Ticket scoring with server-side streaming
 - **Overall Quality Service**: Concurrent weighted quality score calculation with pagination
+- **Period Comparison Service**: Period-over-period score comparison with relative percentage change
 
 ## Database
 
@@ -66,7 +67,8 @@ ticket-score-service/
 │   ├── generated/      # Generated Go code (not in git)
 │   ├── rating_analytics.proto
 │   ├── ticket_scores.proto
-│   └── overall_quality.proto
+│   ├── overall_quality.proto
+│   └── period_comparison.proto
 └── database.db         # SQLite database file (not included, purchase separately :) )
 ```
 
@@ -220,6 +222,60 @@ grpcurl -plaintext -d '{
 - Weighted scoring based on category weights
 - Handles empty result sets gracefully (returns "N/A" for score)
 - Simplified response with only essential fields
+
+### Period Comparison Service
+
+```bash
+# List methods for PeriodComparisonService
+grpcurl -plaintext localhost:50051 list period_comparison.PeriodComparisonService
+
+# Get period comparison (week over week)
+grpcurl -plaintext -d '{
+  "starting_date": "2019-10-01",
+  "period_type": "WEEK"
+}' localhost:50051 period_comparison.PeriodComparisonService/GetPeriodComparison
+
+# Get period comparison (month over month)
+grpcurl -plaintext -d '{
+  "starting_date": "2019-10-01",
+  "period_type": "MONTH"
+}' localhost:50051 period_comparison.PeriodComparisonService/GetPeriodComparison
+
+# Get period comparison (quarter over quarter)
+grpcurl -plaintext -d '{
+  "starting_date": "2019-01-01",
+  "period_type": "QUARTER"
+}' localhost:50051 period_comparison.PeriodComparisonService/GetPeriodComparison
+
+# Get period comparison (year over year)
+grpcurl -plaintext -d '{
+  "starting_date": "2019-01-01",
+  "period_type": "YEAR"
+}' localhost:50051 period_comparison.PeriodComparisonService/GetPeriodComparison
+```
+
+**Response format:**
+```json
+{
+  "start_period": "2019-10-01 to 2019-10-07",
+  "start_score": "82%",
+  "end_period": "2019-10-08 to 2019-10-14",
+  "end_score": "89%",
+  "difference": "+8.5%"
+}
+```
+
+**Features:**
+- Only requires starting date and period type
+- Calculates consecutive periods
+- Shows true percentage change, not just difference
+- Supports WEEK, MONTH, QUARTER, and YEAR comparisons
+
+**Period Calculation Examples:**
+- **WEEK**: `2019-10-01` → Period 1: `2019-10-01 to 2019-10-07`, Period 2: `2019-10-08 to 2019-10-14`
+- **MONTH**: `2019-10-01` → Period 1: `2019-10-01 to 2019-10-31`, Period 2: `2019-11-01 to 2019-11-30`
+- **QUARTER**: `2019-01-01` → Period 1: `2019-01-01 to 2019-03-31`, Period 2: `2019-04-01 to 2019-06-30`
+- **YEAR**: `2019-01-01` → Period 1: `2019-01-01 to 2019-12-31`, Period 2: `2020-01-01 to 2020-12-31`
 
 ## Testing
 

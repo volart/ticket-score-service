@@ -14,9 +14,8 @@ enum PeriodType {
 
 // Request message for getting period over period comparison
 message GetPeriodComparisonRequest {
-  string start_date = 1;      // Format: "2006-01-02" (YYYY-MM-DD)
-  string end_date = 2;        // Format: "2006-01-02" (YYYY-MM-DD)
-  PeriodType period_type = 3; // Type of period comparison
+  string starting_date = 1;   // Format: "2006-01-02" (YYYY-MM-DD)
+  PeriodType period_type = 2; // Type of period comparison
 }
 
 // Response message containing period comparison
