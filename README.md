@@ -1,6 +1,6 @@
 # Ticket Score Service
 
-A gRPC service for rating analytics, ticket scoring, and overall quality assessment with SQLite database backend.
+A gRPC service for rating analytics, ticket scoring, and overall quality assessment with SQLite database.
 
 ## Features
 
@@ -35,7 +35,6 @@ make run
 
 # Build and run with Docker
 make docker-build
-make  docker-run
 
 # Run in background with docker
 make docker-compose-up
@@ -45,7 +44,7 @@ make docker-compose-up
 
 ### gRPC Code Generation
 
-#### Using Makefile (Recommended)
+#### Using Makefile
 ```bash
 # Install tools and generate all proto files
 make setup
@@ -290,7 +289,6 @@ grpcurl -plaintext -d '{
 
 ## Testing
 
-### Using Makefile (Recommended)
 ```bash
 # Run all tests
 make test
