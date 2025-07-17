@@ -1,42 +1,27 @@
-# Build stage
-FROM golang:1.24.5-alpine AS builder
+FROM golang:1.24.5-alpine
 
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache gcc musl-dev sqlite-dev
+# Install required tools
+RUN apk add --no-cache ca-certificates gcc musl-dev protoc sqlite-dev
 
-# Copy go mod and sum files
+# Install protobuf tools
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+# Copy go mod files and download dependencies
 COPY go.mod go.sum ./
-
-# Download dependencies
 RUN go mod download
 
-# Copy source code
+# Copy proto files and generate them
+COPY proto/ ./proto/
+RUN mkdir -p proto/generated/rating_analytics proto/generated/ticket_scores proto/generated/overall_quality proto/generated/period_comparison
+RUN protoc --go_out=. --go-grpc_out=. proto/*.proto
+
+# Copy source code and build
 COPY . .
+RUN CGO_ENABLED=1 go build -o server cmd/server/main.go
 
-# Tidy dependencies and build
-RUN go mod tidy && CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
-
-# Runtime stage
-FROM alpine:latest
-
-WORKDIR /root/
-
-# Install runtime dependencies
-RUN apk --no-cache add ca-certificates sqlite
-
-# Copy the binary from builder stage
-COPY --from=builder /app/main .
-
-# Copy database file
-COPY --from=builder /app/database.db .
-
-# Expose port
 EXPOSE 50051
 
-# Set environment variable
-ENV PORT=50051
-
-# Run the binary
-CMD ["./main"]
+CMD ["./server"]
