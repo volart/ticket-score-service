@@ -17,8 +17,11 @@ The service should be using provided sample data from SQLite database (`database
 
 ### Using Makefile
 ```bash
-# Setup development environment (install tools and generate proto files)
-make setup
+# Install tools
+make install-proto-tools
+
+# Generate proto files
+make proto
 
 # Start the server
 make start
@@ -46,10 +49,10 @@ make docker-compose-up
 
 #### Using Makefile
 ```bash
-# Install tools and generate all proto files
-make setup
+# Install tools
+make install-proto-tools
 
-# Or just generate proto files (if tools already installed)
+# Generate proto files
 make proto
 
 # Clean generated files
@@ -87,14 +90,14 @@ ticket-score-service/
 Install grpcurl:
 ```bash
 brew install grpcurl
-```
 
-```bash
 # List available services
 grpcurl -plaintext localhost:50051 list
+```
 
 ### Rating Analytics Service
 
+```bash
 # List methods for RatingAnalyticsService
 grpcurl -plaintext localhost:50051 list rating_analytics.RatingAnalyticsService
 

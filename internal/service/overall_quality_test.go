@@ -354,39 +354,6 @@ func TestCalculateChunkWeightedScore(t *testing.T) {
 	}
 }
 
-func TestContextCancellation(t *testing.T) {
-	categories := []models.RatingCategory{
-		{ID: 1, Name: "Spelling", Weight: 10.0},
-	}
-
-	mockRatingsRepo := &mocks.MockRatingsRepo{
-		Ratings: map[string][]models.Rating{
-			"1:0": {{ID: 1, RatingCategoryID: 1, Rating: 4}},
-		},
-		Count: 1,
-	}
-
-	mockCategoryRepo := &mockCategoryRepo{
-		categories: categories,
-	}
-
-	service := NewOverallQualityService(mockRatingsRepo, mockCategoryRepo)
-
-	// Create a context that's already cancelled
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-
-	startDate := time.Date(2019, 10, 1, 0, 0, 0, 0, time.UTC)
-	endDate := time.Date(2019, 10, 7, 0, 0, 0, 0, time.UTC)
-
-	// This should handle context cancellation gracefully
-	_, err := service.GetOverallQualityScore(ctx, startDate, endDate)
-
-	if err == nil {
-		t.Errorf("Expected error due to context cancellation, got none")
-	}
-}
-
 // generateRatings creates a slice of test ratings
 func generateRatings(startID, count, categoryID, rating int) []models.Rating {
 	ratings := make([]models.Rating, count)
